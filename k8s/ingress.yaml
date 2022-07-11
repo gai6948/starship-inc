@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: "starship-inc-web-api"
+  labels:
+    app.kubernetes.io/name: "starship-inc-web-api"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - host: example.starship-inc.tech
+      secretName: example-starship-inc-tech
+  rules:
+    - host: example.starship-inc.tech
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: "starship-inc-web-api"
+                port:
+                  number: 5000

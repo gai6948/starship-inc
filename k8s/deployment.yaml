@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "starship-inc-web-api"
+  labels:
+    app.kubernetes.io/name: "starship-inc-web-api"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: "starship-inc-web-api"
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: "starship-inc-web-api"
+    spec:
+      serviceAccountName: "starship-inc-web-api"
+      containers:
+        - name: "web-api"
+          securityContext:
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+          image: "gc6948/go-microservice-template"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 5000
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 5000
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                - starship-inc-web-api
+            topologyKey: "kubernetes.io/hostname"
